@@ -1,5 +1,6 @@
-#' Function to convert gene-wise fasta files to species-wise fastas
+#' Convert gene-wise fasta files to species-wise fastas
 #' 
+#' Function converts gene-wise fasta files to species-wise fastas
 #' (e.g., multiple sp. per one gene file)
 #' Relies on faSomeRecords
 #' Download at http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faSomeRecords

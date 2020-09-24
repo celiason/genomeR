@@ -3,6 +3,8 @@
 #' @param fastapath path to FASTA files
 #' @param outpath output path
 #' 
+#' @export
+#' 
 multi2single <- function(fastapath, outpath=NULL) {
 	files <- list.files(fastapath, pattern=".fa$", full=TRUE)
 	seqs <- lapply(files, readLines)

@@ -6,6 +6,8 @@
 #' @param index whether to index the VCF variant file output
 #' @param cons whether to generate consensus sequence
 #' 
+#' @export
+#' 
 #' Testing zone:
 #' list.files("genomes/actHom")
 #' ref="genomes/actHom/actHom-to-todChl.consensus.fa"

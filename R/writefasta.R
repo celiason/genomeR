@@ -1,5 +1,7 @@
 #' Save as single-line fasta
 #' 
+#' @export
+#' 
 writefasta <- function(x, outpath, ext=".fa") {
 	if (!is.null(names(unlist(x)))) {
 		for (i in seq_along(x)) {
@@ -13,6 +15,8 @@ writefasta <- function(x, outpath, ext=".fa") {
 #' @param x character of scientific names
 #' 
 #' @value output genome species abbreviates (e.g., "homSap" for Homo sapiens)
+#' 
+#' @export
 #' 
 sppAbbrev <- function(x) {
 	tmp <- str_split(x, " |_")

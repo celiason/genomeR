@@ -1,9 +1,13 @@
 #' Function to align raw reads to reference genome
 #' 
+#' add description
+#' 
 #' @param ref path to reference genome (genome will be indexed if not already)
 #' @param reads path to raw reads file (PE)
 #' @param cores how many cores to use for BWA MEM
 #' @param ram how much RAM (GB) to allot to BAM file output
+#' 
+#' @export
 #' 
 alignReads <- function(ref, reads, cores=48, ram=150) {
 	# Paths to programs
