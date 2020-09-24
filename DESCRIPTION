@@ -1,0 +1,15 @@
+Package: genomeR
+Title: Tools for the analysis and assembly of genomic data in R
+Version: 1.0
+Authors@R: person("Eliason", "Chad", , "celiason@fieldmuseum.org", role = c("aut", "cre"))
+Description: A framework for processing and assembling phenomic supermatrices from individuals nexus datasets.
+Depends: R (>= 3.1.2)
+Imports:
+	ape,
+	pbapply,
+	ggplot2,
+	stringr,
+	utils
+License: GPL (>= 2)
+LazyData: true
+RoxygenNote: 6.1.0
