@@ -376,7 +376,10 @@
 	"buffers":
 	[
 		{
+			"contents": "#' Function to get consensus sequences from BAM alignments\n#' \n#' @param ref path to reference genome\n#' @param bam path to BAM alignment file\n#' @param call whether to call variants\n#' @param index whether to index the VCF variant file output\n#' @param cons whether to generate consensus sequence\n#' \n#' Testing zone:\n#' list.files(\"genomes/actHom\")\n#' ref=\"genomes/actHom/actHom-to-todChl.consensus.fa\"\n#' bam=\"alignments/actHom-to-actHom.bam\"\n#' \ngetConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL) {\n\tnm <- stringr::str_extract(basename(bam), \".*?(?=\\\\.bam)\")\n\toutpath <- paste0(\"genomes/\", substr(nm, 1, 6))\n\tif (!dir.exists(outpath)) {\n\t\tdir.create(outpath)\n\t}\n\t# call variants (filter out indels with -I - Taylor Hains suggested doing this to maintain reference coordinates)\n\tif (call) {\n\t\tif (file.exists(paste0(outpath, \"/\", nm, \".calls.vcf.gz\"))) {\n\t\t\tstop(\"VCF file already exists\")\n\t\t}\n\t\tsystem(paste0(\"bcftools mpileup -I -Ou -f \", ref, \" \", bam, \" | bcftools call -mv -Oz -o \", outpath, \"/\", nm, \".calls.vcf.gz\"))\n\t}\n\t# index\n\tif (index) {\n\t\tsystem(paste0(\"bcftools index \", outpath, \"/\", nm, \".calls.vcf.gz\"))\n\t}\n\t# normalize indels\n\t# system(paste0(\"bcftools norm -f \", ref, \" \", nm, \".calls.vcf.gz -Ob -o \", nm, \".calls.norm.bcf\"))\n\t# filter adjacent indels within 5bp\n\t# system(paste0(\"bcftools filter --IndelGap 5 calls.norm.bcf -Ob -o calls.norm.flt-indels.bcf\")\n\tif (cons) {\n\t\tif (file.exists(paste0(outpath, \"/\", nm, \".consensus.fa\"))) {\n\t\t\tstop(\"Consensus FASTA already exists, try a different suffix\")\n\t\t}\n\t\tsystem(paste0(\"cat \", ref, \" | bcftools consensus \", outpath, \"/\", nm, \".calls.vcf.gz > \", outpath, \"/\", nm, \".consensus.fa\"))\n\t}\n\t# This assumes we have already made the calls, normalized indels and filtered. There is another page which goes deeper and is devoted just to this, but in brief, the variant calling command in its simplest form is:\n}\n",
 			"file": "getConsensus.R",
+			"file_size": 1910,
+			"file_write_time": 132454489840727191,
 			"settings":
 			{
 				"buffer_size": 1910,
@@ -385,7 +388,10 @@
 			}
 		},
 		{
+			"contents": "#' Convert multi-line to single-line fastas\n#' \n#' @param fastapath path to FASTA files\n#' @param outpath output path\n#' \nmulti2single <- function(fastapath, outpath=NULL) {\n\tfiles <- list.files(fastapath, pattern=\".fa$\", full=TRUE)\n\tseqs <- lapply(files, readLines)\n\tfor (i in seq_along(seqs)) {\n\t\t# i=2\n\t\tfirstlines <- grep(\">\", seqs[[i]])\n\t\tlastlines <- c(grep(\">\", seqs[[i]])[-1] - 1, length(seqs[[i]]))\n\t\tnewseq <- lapply(seq_along(firstlines), function(x) {\n\t\t\tc(seqs[[i]][firstlines[x]], paste0(seqs[[i]][(firstlines[x]+1) : lastlines[x]], collapse=\"\"))\n\t\t})\n\t\tnewseq <- unlist(newseq)\n\t\tnms <- newseq[seq(1, length(newseq)-1, by=2)]\n\t\tseqs[[i]] <- setNames(as.list(newseq[seq(2, length(newseq), by=2)]), nms)\n\t}\n\tsetNames(seqs, basename(files))\n}\n",
 			"file": "multi2single.R",
+			"file_size": 755,
+			"file_write_time": 132454490676596005,
 			"settings":
 			{
 				"buffer_size": 755,
@@ -394,7 +400,10 @@
 			}
 		},
 		{
+			"contents": "#' Remove stop codons\n#' \n#' @param seqs list of DNA sequences in seqinr(?) format\n#' \ncutstops <- function(seqs, fastapath=NULL) {\n\tif (!is.null(fastapath)) {\n\t\tseqs <- multi2single(fastapath)\n\t}\n\t# Check if codons\n\tid <- sapply(seqs, function(x) {\n\t\tall((sapply(x, nchar) %% 3) == 0)\n\t})\n\tif (!all(id)) {\n\t\tstop(\"Sequences do not appear to be codon alignments, try aligning (e.g., with MAFFT)\")\n\t}\n\tfor (i in seq_along(seqs)) {\n\t\tfor (j in seq_along(seqs[[i]])) {\n\t\t\ttmp <- substring(seqs[[i]][[j]], first=seq(1, nchar(seqs[[i]][[j]]), by=3), last=seq(1, nchar(seqs[[i]][[j]]), by=3) + 2)\n\t\t\tseqs[[i]][[j]] <- paste0(gsub(\"TAG|TAA|TGA\", \"---\", tmp), collapse=\"\")\n\t\t}\n\t}\n\treturn(seqs)\n}\n",
 			"file": "cutStops.R",
+			"file_size": 688,
+			"file_write_time": 132454490845990586,
 			"settings":
 			{
 				"buffer_size": 688,
@@ -403,7 +412,10 @@
 			}
 		},
 		{
+			"contents": "#' Save as single-line fasta\n#' \nwritefasta <- function(x, outpath, ext=\".fa\") {\n\tif (!is.null(names(unlist(x)))) {\n\t\tfor (i in seq_along(x)) {\n\t\t\tcat(paste0(names(x[[i]]), \"\\n\", x[[i]]), sep=\"\\n\", file=paste0(outpath, \"/\", names(x)[i], ext))\n\t\t}\n\t}\n}\n\n#' Abbreviate scientific names\n#' \n#' @param x character of scientific names\n#' \n#' @value output genome species abbreviates (e.g., \"homSap\" for Homo sapiens)\n#' \nsppAbbrev <- function(x) {\n\ttmp <- str_split(x, \" |_\")\n\tpaste0(tolower(substring(sapply(tmp, \"[[\", 1), 1, 3)),\n\t\t   toupper(substring(sapply(tmp, \"[[\", 2), 1, 1)),\n\t\t   substring(sapply(tmp, \"[[\", 2), 2, 3))\n}\n",
 			"file": "writefasta.R",
+			"file_size": 626,
+			"file_write_time": 132454490938981853,
 			"settings":
 			{
 				"buffer_size": 626,
@@ -412,7 +424,10 @@
 			}
 		},
 		{
+			"contents": "#' Function to convert gene-wise fasta files to species-wise fastas\n#' \n#' (e.g., multiple sp. per one gene file)\n#' Relies on faSomeRecords\n#' Download at http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faSomeRecords\n#' Put in /bin folder\n#' Add execute permissions chmod a+x faSomeRecords.\n#' \n#' @param files list of FASTA files\n#' @param cores number of cores\n#' @param contig name of contig to pull out\n#' @param outpath path to output FASTAs\n#' @param namesep unused?\n#' \ngenewise2sppwise <- function(files, cores=1, contig=NULL, outpath=\".\", namesep=\"|\") {\n\trequire(parallel)\n\trequire(stringr)\n\trequire(pbapply)\n\tif (!dir.exists(\"temp\")) {\n\t\tdir.create(\"temp\")\n\t}\n\t# Extract a specific contig:\n\tif (!is.null(contig)) {\n\t\tcat(contig, file=\"temp/ids.txt\", sep=\"\\n\")\n\t\t# Extract contig fastas\n\t\tmclapply(files, mc.cores=cores, function(f) {\n\t\t\t# f <- files[30]\n\t\t\tnm <- gsub(\".fa(sta?)\", paste0(\".\", contig, \".fa\"), basename(f))\n\t\t\tsystem(paste0(\"faSomeRecords \", f, \" temp/ids.txt temp/\", nm))\n\t\t})\n\t\tsubfiles <- list.files(\"temp\", pattern=\".fa\", full=TRUE)\n\t\tnms <- substr(basename(subfiles), 1, 6)\n\t\tmclapply(seq_along(subfiles), mc.cores=cores, function(i) {\n\t\t  x <- readLines(subfiles[i])\n\t\t  x[[1]] <- gsub(paste0(\">\", contig), paste0(\">\", contig, \"_\", nms[i]), x[[1]])\n\t\t  x[[1]] <- gsub(\"\\\\s.*?$\", \"\", x[[1]])\n\t\t  cat(x, file=subfiles[i], sep=\"\\n\")\n\t\t})\n\t\t# concatenate into single MSA file\n\t\tsystem(paste0(\"cat temp/*.fa > contig\", contig, \".msa\"))\n\t\t# cleanup\n\t\tsystem(\"rm temp/*\")\n\t}\n\tseqs <- lapply(files, readLines)\n\tseqstarts <- lapply(seqs, grep, pattern=\">\")\n\tif (length(unique(sapply(seqstarts, length)))!=1) {\n\t\tstop(\"Not same number of genes\")\n\t}\n\tnseq <- length(seqstarts[[1]])\n\tnsamp <- length(seqs)\n\tnms <- na.omit(str_extract(seqs[[1]], paste0(\"(?<=\\\\\", namesep, \")(.*?)$\")))\n\t# Now parse sequences by gene and output as new files\n\tfor (i in 1:nseq) {\n\t\tfor (j in 1:nsamp) {\n\t\t\tstart <- seqstarts[[j]][i]\n\t\t\tif (i == length(seqstarts[[j]])) {\n\t\t\t\tend <- length(seqs[[j]])\n\t\t\t} else {\n\t\t\t\tend <- seqstarts[[j]][i+1] - 1\n\t\t\t}\n\t\t\tbits <- seqs[[j]][start : end]\n\t\t\tcat(bits, file = paste0(outpath, \"/\", nms[i], \".fa\"), append=TRUE, sep=\"\\n\")\n\t\t}\n\t}\n}\n",
 			"file": "genewise2sppwise.R",
+			"file_size": 2181,
+			"file_write_time": 132454490560299330,
 			"settings":
 			{
 				"buffer_size": 2181,
@@ -421,7 +436,10 @@
 			}
 		},
 		{
+			"contents": "#' Function to align raw reads to reference genome\n#' \n#' @param ref path to reference genome (genome will be indexed if not already)\n#' @param reads path to raw reads file (PE)\n#' @param cores how many cores to use for BWA MEM\n#' @param ram how much RAM (GB) to allot to BAM file output\n#' \nalignReads <- function(ref, reads, cores=48, ram=150) {\n\t# Paths to programs\n\tbwa=\"/home/FM/celiason/bwa/bwa\"\n\tfastp=\"/home/FM/celiason/fastp\"\n\t# Setup\n\toldwd <- getwd()\n\t# id <- \n\tid <- gsub(\".fa\", \"\", basename(ref))\n\tfrom <- substr(basename(reads), 1, 6)\n\tto <- substr(basename(ref), 1, 6)\n\tprefix <- paste0(from, \"-to-\", to)\n\t# Index reference genome\n\tsetwd(paste0(\"genomes/\", from))\n\tif (!file.exists(paste0(id, \".fa.bwt\"))) {\n\t\tsystem(paste0(bwa, \" index \", basename(ref)))\n\t}\n\tsetwd(oldwd)\n\t# Align raw reads to reference genome\n\tif (file.exists(paste0(\"alignments/\", prefix, \".bam\"))) {\n\t\tstop(\"BAM file already exists!\")\n\t}\n\tsystem(paste0(fastp, \" -i \", reads, \" --interleaved_in --adapter_sequence=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA --adapter_sequence_r2=AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --stdout -h alignments/\", prefix, \".html | sed -E 's/^((@|\\\\+)SRR[^.]+\\\\.[^.]+)\\\\.(1|2)/\\\\1/' | \", bwa, \" mem -p -t \", cores, \" \", ref, \" - | samtools view -Sb - | samtools sort -m \", ram, \"G > alignments/\", prefix, \".bam\"))\n}",
 			"file": "alignReads.R",
+			"file_size": 1315,
+			"file_write_time": 132454490109710501,
 			"settings":
 			{
 				"buffer_size": 1315,
@@ -45448,8 +45466,8 @@
 						"selection":
 						[
 							[
-								626,
-								626
+								0,
+								0
 							]
 						],
 						"settings":
@@ -60056,7 +60074,7 @@
 							],
 							"WordCount":
 							{
-								"changes": 1,
+								"changes": 0,
 								"count": 42,
 								"modified": false,
 								"selection": false,
