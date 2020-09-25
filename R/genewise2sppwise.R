@@ -42,25 +42,28 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep="
 		# cleanup
 		system("rm temp/*")
 	}
-	seqs <- lapply(files, readLines)
-	seqstarts <- lapply(seqs, grep, pattern=">")
-	if (length(unique(sapply(seqstarts, length)))!=1) {
-		stop("Not same number of genes")
-	}
-	nseq <- length(seqstarts[[1]])
-	nsamp <- length(seqs)
-	nms <- na.omit(str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
-	# Now parse sequences by gene and output as new files
-	for (i in 1:nseq) {
-		for (j in 1:nsamp) {
-			start <- seqstarts[[j]][i]
-			if (i == length(seqstarts[[j]])) {
-				end <- length(seqs[[j]])
-			} else {
-				end <- seqstarts[[j]][i+1] - 1
+
+	if (is.null(contig)) {
+		seqs <- lapply(files, readLines)
+		seqstarts <- lapply(seqs, grep, pattern=">")
+		if (length(unique(sapply(seqstarts, length)))!=1) {
+			stop("Not same number of genes")
+		}
+		nseq <- length(seqstarts[[1]])
+		nsamp <- length(seqs)
+		nms <- na.omit(str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
+		# Now parse sequences by gene and output as new files
+		for (i in 1:nseq) {
+			for (j in 1:nsamp) {
+				start <- seqstarts[[j]][i]
+				if (i == length(seqstarts[[j]])) {
+					end <- length(seqs[[j]])
+				} else {
+					end <- seqstarts[[j]][i+1] - 1
+				}
+				bits <- seqs[[j]][start : end]
+				cat(bits, file = paste0(outpath, "/", nms[i], ".fa"), append=TRUE, sep="\n")
 			}
-			bits <- seqs[[j]][start : end]
-			cat(bits, file = paste0(outpath, "/", nms[i], ".fa"), append=TRUE, sep="\n")
 		}
 	}
 }
