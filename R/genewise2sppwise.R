@@ -25,8 +25,8 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep="
 		cat(contig, file="temp/ids.txt", sep="\n")
 		# Extract contig fastas
 		mclapply(files, mc.cores=cores, function(f) {
-			# f <- files[30]
-			nm <- gsub(".fa(sta?)", paste0(".", contig, ".fa"), basename(f))
+			# f <- files[1]
+			nm <- gsub("\\.(fa|fasta)", paste0(".", contig, ".fa"), basename(f))
 			system(paste0("faSomeRecords ", f, " temp/ids.txt temp/", nm))
 		})
 		subfiles <- list.files("temp", pattern=".fa", full=TRUE)
