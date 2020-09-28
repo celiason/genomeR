@@ -15,7 +15,7 @@
 #' 
 # testing zone-
 # files <- list.files("genomes", recursive=TRUE, pattern="cds.fa", full=TRUE)
-genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=NULL) {
+genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=NULL, force=FALSE) {
 	require(parallel)
 	require(stringr)
 	require(pbapply)
@@ -60,6 +60,12 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=N
 		# nms <- na.omit(stringr::str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
 		# Now parse sequences by gene and output as new files
 		for (i in 1:nseq) {
+			outfile <- paste0(outpath, "/", nms[i], ".fa")
+			if (file.exists(outfile) & !force) {
+				stop("Files exists, consider using force=TRUE?")
+			} else if (force) {
+				file.remove(outfile)
+			}
 			for (j in 1:nsamp) {
 				# i=1
 				# j=1
@@ -72,7 +78,7 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=N
 				spp <- substr(basename(files[j]), 1, 6)
 				bits <- seqs[[j]][start : end]
 				bits <- gsub(">.*?$", paste0(">", spp), bits)
-				cat(bits, file = paste0(outpath, "/", nms[i], ".fa"), append=TRUE, sep="\n")
+				cat(bits, file=outfile, append=TRUE, sep="\n")
 			}
 		}
 	}
