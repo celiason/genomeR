@@ -11,9 +11,11 @@
 #' @param cores number of cores
 #' @param contig name of contig to pull out
 #' @param outpath path to output FASTAs
-#' @param namesep unused?
+#' @param namesep unused? e.g., "|" for ">todChl|Mc1r" format
 #' 
-genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep="|") {
+# testing zone-
+# files <- list.files("genomes", recursive=TRUE, pattern="cds.fa", full=TRUE)
+genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=NULL) {
 	require(parallel)
 	require(stringr)
 	require(pbapply)
@@ -44,24 +46,32 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep="
 	}
 
 	if (is.null(contig)) {
-		seqs <- lapply(files, readLines)
+		seqs <- pblapply(files, readLines)
 		seqstarts <- lapply(seqs, grep, pattern=">")
 		if (length(unique(sapply(seqstarts, length)))!=1) {
 			stop("Not same number of genes")
 		}
 		nseq <- length(seqstarts[[1]])
 		nsamp <- length(seqs)
-		nms <- na.omit(str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
+		# namesep="|"
+		seqs[[1]][1]
+		nms <- gsub(">", "", seqs[[1]][seqstarts[[1]]])
+		nms <- gsub("(-|\\.)", "_", nms)
+		# nms <- na.omit(stringr::str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
 		# Now parse sequences by gene and output as new files
 		for (i in 1:nseq) {
 			for (j in 1:nsamp) {
+				# i=1
+				# j=1
 				start <- seqstarts[[j]][i]
 				if (i == length(seqstarts[[j]])) {
 					end <- length(seqs[[j]])
 				} else {
 					end <- seqstarts[[j]][i+1] - 1
 				}
+				spp <- substr(basename(files[j]), 1, 6)
 				bits <- seqs[[j]][start : end]
+				bits <- gsub(">.*?$", paste0(">", spp), bits)
 				cat(bits, file = paste0(outpath, "/", nms[i], ".fa"), append=TRUE, sep="\n")
 			}
 		}
