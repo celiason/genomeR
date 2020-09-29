@@ -67,8 +67,6 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=N
 				file.remove(outfile)
 			}
 			for (j in 1:nsamp) {
-				# i=1
-				# j=1
 				start <- seqstarts[[j]][i]
 				if (i == length(seqstarts[[j]])) {
 					end <- length(seqs[[j]])
