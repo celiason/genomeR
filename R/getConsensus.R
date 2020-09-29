@@ -13,7 +13,7 @@
 #' ref="genomes/actHom/actHom-to-todChl.consensus.fa"
 #' bam="alignments/actHom-to-actHom.bam"
 #' 
-getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL) {
+getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE) {
 	nm <- stringr::str_extract(basename(bam), ".*?(?=\\.bam)")
 	outpath <- paste0("genomes/", substr(nm, 1, 6))
 	if (!dir.exists(outpath)) {
@@ -21,10 +21,11 @@ getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL
 	}
 	# call variants (filter out indels with -I - Taylor Hains suggested doing this to maintain reference coordinates)
 	if (call) {
-		if (file.exists(paste0(outpath, "/", nm, ".calls.vcf.gz"))) {
-			stop("VCF file already exists")
-		}
-		system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))
+		if (!force & file.exists(paste0(outpath, "/", nm, ".calls.vcf.gz"))) {
+			stop("VCF file already exists, use `force=TRUE` to overwrite")
+		} else {
+			system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))	
+		}		
 	}
 	# index
 	if (index) {
@@ -35,10 +36,11 @@ getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL
 	# filter adjacent indels within 5bp
 	# system(paste0("bcftools filter --IndelGap 5 calls.norm.bcf -Ob -o calls.norm.flt-indels.bcf")
 	if (cons) {
-		if (file.exists(paste0(outpath, "/", nm, ".consensus.fa"))) {
+		if (!force & file.exists(paste0(outpath, "/", nm, ".consensus.fa"))) {
 			stop("Consensus FASTA already exists, try a different suffix")
-		}
-		system(paste0("cat ", ref, " | bcftools consensus ", outpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, ".consensus.fa"))
+		} else {
+			system(paste0("cat ", ref, " | bcftools consensus ", outpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, ".consensus.fa"))	
+		}		
 	}
 	# This assumes we have already made the calls, normalized indels and filtered. There is another page which goes deeper and is devoted just to this, but in brief, the variant calling command in its simplest form is:
 }
