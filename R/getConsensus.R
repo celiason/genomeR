@@ -39,7 +39,7 @@ getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL
 		if (!force & file.exists(paste0(outpath, "/", nm, ".consensus.fa"))) {
 			stop("Consensus FASTA already exists, try a different suffix")
 		} else {
-			system(paste0("cat ", ref, " | bcftools consensus ", outpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, ".consensus.fa"))	
+			system(paste0("cat ", ref, " | bcftools consensus -i 'QUAL>10 && DP>10' ", outpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, ".consensus.fa"))	
 		}		
 	}
 	# This assumes we have already made the calls, normalized indels and filtered. There is another page which goes deeper and is devoted just to this, but in brief, the variant calling command in its simplest form is:
