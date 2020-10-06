@@ -1,6 +1,6 @@
 #' Remove stop codons
 #' 
-#' @param seqs list of DNA sequences in seqinr(?) format
+#' @param seqs list of DNA sequences in seqinr(?) format (e.g., `seqinr::read.fasta`)
 #' 
 cutstops <- function(seqs, fastapath=NULL) {
 	if (!is.null(fastapath)) {

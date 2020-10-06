@@ -5,11 +5,18 @@
 #' 
 #' @export
 #' 
-multi2single <- function(fastapath, outpath=NULL) {
-	files <- list.files(fastapath, pattern=".fa$", full=TRUE)
-	seqs <- lapply(files, readLines)
+# fasta <- files[1]
+multi2single <- function(fasta, fastapath=NULL, outpath=NULL) {
+	# lots of files
+	if (!is.null(fastapath)) {
+		files <- list.files(fastapath, pattern=".fa$", full=TRUE)
+		seqs <- lapply(files, readLines)
+	# single fasta file
+	} else {
+		seqs <- list(readLines(fasta))
+	}
 	for (i in seq_along(seqs)) {
-		# i=2
+		# i=1
 		firstlines <- grep(">", seqs[[i]])
 		lastlines <- c(grep(">", seqs[[i]])[-1] - 1, length(seqs[[i]]))
 		newseq <- lapply(seq_along(firstlines), function(x) {
@@ -19,5 +26,9 @@ multi2single <- function(fastapath, outpath=NULL) {
 		nms <- newseq[seq(1, length(newseq)-1, by=2)]
 		seqs[[i]] <- setNames(as.list(newseq[seq(2, length(newseq), by=2)]), nms)
 	}
-	setNames(seqs, basename(files))
+	if (!is.null(fastapath)) {
+		setNames(seqs, basename(files))
+	} else if (length(seqs)==1) {
+		return(seqs[[1]])
+	}
 }

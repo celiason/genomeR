@@ -2,13 +2,27 @@
 #' 
 #' @export
 #' 
-writefasta <- function(x, outpath, ext=".fa") {
+writefasta <- function(x, outpath=NULL, ext=".fa") {
 	if (!is.null(names(unlist(x)))) {
 		for (i in seq_along(x)) {
 			cat(paste0(names(x[[i]]), "\n", x[[i]]), sep="\n", file=paste0(outpath, "/", names(x)[i], ext))
 		}
+	} else {
+		stop("Need names")
 	}
 }
+
+# Write single fasta file
+# x=seqs
+# length(seqs[[1]])
+# write.fasta <- function(x, outpath=NULL, ext=".fa") {
+# 	if (!is.null(names(unlist(x)))) {
+# 		for (i in seq_along(x)) {
+# 			cat(paste0(names(x[[i]]), "\n", x[[i]]), sep="\n", file=paste0(outpath, "/", names(x)[i], ext))
+# 		}
+# 	}
+# }
+
 
 #' Abbreviate scientific names
 #' 
