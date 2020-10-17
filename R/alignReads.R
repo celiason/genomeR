@@ -1,6 +1,6 @@
 #' Function to align raw reads to reference genome
 #' 
-#' add description
+#' TODO: add description
 #' 
 #' @param ref path to reference genome (genome will be indexed if not already)
 #' @param reads path to raw reads file (PE)
@@ -9,7 +9,7 @@
 #' 
 #' @export
 #' 
-alignReads <- function(ref, reads, cores=48, ram=150) {
+alignReads <- function(ref, reads, cores=48, ram=150, suffix=NULL) {
 	# Paths to programs
 	bwa="/home/FM/celiason/bwa/bwa"
 	fastp="/home/FM/celiason/fastp"
@@ -26,9 +26,22 @@ alignReads <- function(ref, reads, cores=48, ram=150) {
 		system(paste0(bwa, " index ", basename(ref)))
 	}
 	setwd(oldwd)
-	# Align raw reads to reference genome
-	if (file.exists(paste0("alignments/", prefix, ".bam"))) {
-		stop("BAM file already exists!")
+	# Setup name	
+	if (!is.null(suffix)) {
+		prefix <- paste0(prefix, ".", suffix)
 	}
-	system(paste0(fastp, " -i ", reads, " --interleaved_in --adapter_sequence=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA --adapter_sequence_r2=AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --stdout -h alignments/", prefix, ".html | sed -E 's/^((@|\\+)SRR[^.]+\\.[^.]+)\\.(1|2)/\\1/' | ", bwa, " mem -p -t ", cores, " ", ref, " - | samtools view -Sb - | samtools sort -m ", ram, "G > alignments/", prefix, ".bam"))
+	if (file.exists(paste0("alignments/", prefix, ".bam"))) {
+		stop("BAM file already exists! Please add or change `suffix` argument.")
+	}
+	# Align raw reads to reference genome
+	run <- paste0(fastp, " -i ", reads, " --interleaved_in --adapter_sequence=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA --adapter_sequence_r2=AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --stdout -h alignments/", prefix, ".html | sed -E 's/^((@|\\+)SRR[^.]+\\.[^.]+)\\.(1|2)/\\1/' | ", bwa, " mem -p -t ", cores, " ", ref, " - | samtools view -Sb - | samtools sort -m ", ram, "G > alignments/", prefix, ".bam")
+	# run
+	system(run)
 }
+
+# ref="genomes/actHom/actHom-to-todChl.dedup.consensus.masked.fa"
+# reads="reads/actHom-pe150-reads_INTERLEAVED.fastq.gz"
+# cores=48
+# ram=100
+# suffix=NULL
+

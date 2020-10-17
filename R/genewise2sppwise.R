@@ -19,11 +19,11 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=N
 	require(parallel)
 	require(stringr)
 	require(pbapply)
-	if (!dir.exists("temp")) {
-		dir.create("temp")
-	}
 	# Extract a specific contig:
 	if (!is.null(contig)) {
+		if (!dir.exists("temp")) {
+			dir.create("temp")
+		}
 		cat(contig, file="temp/ids.txt", sep="\n")
 		# Extract contig fastas
 		mclapply(files, mc.cores=cores, function(f) {

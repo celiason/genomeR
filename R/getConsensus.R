@@ -8,11 +8,6 @@
 #' 
 #' @export
 #' 
-#' Testing zone:
-#' list.files("genomes/actHom")
-#' ref="genomes/actHom/actHom-to-todChl.consensus.fa"
-#' bam="alignments/actHom-to-actHom.bam"
-#' 
 getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>10 && DP>10") {
 	nm <- stringr::str_extract(basename(bam), ".*?(?=\\.bam)")
 	outpath <- paste0("genomes/", substr(nm, 1, 6))
@@ -44,3 +39,8 @@ getConsensus <- function(ref, bam, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL
 	}
 	# This assumes we have already made the calls, normalized indels and filtered. There is another page which goes deeper and is devoted just to this, but in brief, the variant calling command in its simplest form is:
 }
+
+# Testing zone:
+# list.files("genomes/actHom")
+# getConsensus(bam="alignments/actHom-to-actHom.bam", ref="genomes/actHom/actHom-to-todChl.consensus.fa")
+
