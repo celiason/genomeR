@@ -28,7 +28,7 @@ alignReads <- function(ref, reads, cores=48, ram=150, suffix=NULL) {
 	setwd(oldwd)
 	# Setup name	
 	if (!is.null(suffix)) {
-		prefix <- paste0(prefix, ".", suffix)
+		prefix <- paste0(prefix, suffix)
 	}
 	if (file.exists(paste0("alignments/", prefix, ".bam"))) {
 		stop("BAM file already exists! Please add or change `suffix` argument.")
