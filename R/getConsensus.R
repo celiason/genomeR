@@ -8,9 +8,12 @@
 #' 
 #' @export
 #' 
-getConsensus <- function(ref, bam, outpath, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>10 && DP>10") {
+getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>30 && DP>5") {
 	nm <- stringr::str_extract(basename(bam), ".*?(?=\\.bam)")
-	# outpath <- paste0("genomes/", substr(nm, 1, 6))
+	
+	if (is.null(outpath)) {
+		outpath <- paste0("genomes/", substr(nm, 1, 6))
+	}
 	if (!dir.exists(outpath)) {
 		dir.create(outpath)
 	}
