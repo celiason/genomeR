@@ -13,9 +13,7 @@
 #' @param outpath path to output FASTAs
 #' @param namesep unused? e.g., "|" for ">todChl|Mc1r" format
 #' 
-# testing zone-
-# files <- list.files("genomes", recursive=TRUE, pattern="cds.fa", full=TRUE)
-genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=NULL, force=FALSE) {
+genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", group=FALSE, namesep=NULL, force=FALSE) {
 	require(parallel)
 	require(stringr)
 	require(pbapply)
@@ -48,13 +46,16 @@ genewise2sppwise <- function(files, cores=1, contig=NULL, outpath=".", namesep=N
 	if (is.null(contig)) {
 		seqs <- pblapply(files, readLines)
 		seqstarts <- lapply(seqs, grep, pattern=">")
-		if (length(unique(sapply(seqstarts, length)))!=1) {
-			stop("Not same number of genes")
-		}
+		if (!group & length(unique(sapply(seqstarts, length)))!=1) {
+			stop("Not same number of genes. Consider grouping by name with `group`.")
+		} #else if group {
+		# 	str_extract(seqs[[1]], "(GMOD.*?$)")
+		# 	grep("GMOD.*?", seqs[[1]], value=T)
+		# }
 		nseq <- length(seqstarts[[1]])
 		nsamp <- length(seqs)
 		# namesep="|"
-		seqs[[1]][1]
+		# seqs[[1]][1]
 		nms <- gsub(">", "", seqs[[1]][seqstarts[[1]]])
 		nms <- gsub("(-|\\.)", "_", nms)
 		# nms <- na.omit(stringr::str_extract(seqs[[1]], paste0("(?<=\\", namesep, ")(.*?)$")))
