@@ -14,38 +14,64 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-runCodeml <- function(phy, model=c("M0", "branch-site", "free"), fasta, force=TRUE, outpath=NULL, silent=FALSE) {
+runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), fasta, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
 	# fasta=f
+	require(stringr)
 	oldwd <- getwd()
 	prefix <- gsub("\\..*?$", "", basename(fasta))
-	if (!dir.exists("M0_results")) {
-		dir.create("M0_results")
-	}
 	model <- match.arg(model)
 	if (model=="branch-site") {
-		x <- readLines("codeml-M2-BS-H1.ctl")
+		ctl <- readLines("codeml-M2-BS-H1.ctl")
 	}
 	if (model=="free") {
-		x <- readLines("codeml_free.ctl")
+		ctl <- readLines("codeml_free.ctl")
 	}
-	if (model=="M0") {
-		x <- readLines("codeml-M0-BS.ctl")
-		# ape::read.tree(phy)
-		x <- stringr::str_replace(x, "treefile = .*", paste0("treefile = kingtree_nolabels.phy"))
-		# warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
-		outpath <- paste0("M0_results/", prefix)
+
+	if (dir.exists(paste0(model, "_results/", prefix))) {
+		stop("Files already exists, consider deleting?")
+	} else {
+		dir.create(paste0(model, "_results/", prefix))
 	}
-	x <- stringr::str_replace(x, "treefile = .*", paste0("treefile = ", phy))
-	x <- stringr::str_replace(x, "seqfile = .*", paste0("seqfile = ", fasta))
-	outpath <- paste0("M0_results/", prefix)
+
+	ctl <- readLines(paste0(model, ".ctl"))
+
+	# For models M1a and M2a we are using branch lengths estimated under M0 model:
+	if (model %in% c("M1a", "M2a")) {
+		raw <- readLines(paste0("M0_results/", prefix, "/mlc"))
+		textphy <- raw[grep("tree length", raw)[1]+4]
+	}
+
+	# For model M0 we are using phylogeny without any nodes labeled
+	if (model == "M0") {
+		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = kingtree_nolabels.phy"))
+		warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
+	}
+
+	outpath <- paste0(model, "_results/", prefix)	
 	if (!dir.exists(outpath)) {
 		dir.create(outpath)
 	}
 	setwd(outpath)
-	cat(x, file="temp.ctl", sep="\n")
-	# silent=FALSE
+
+	if (fixedbl) {
+		cat(textphy, file="fixed.phy")
+		ctl <- str_replace(ctl, "treefile = .*$", "treefile = fixed.phy")
+	} else {
+		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = ", phy))	
+	}
+	
+	ctl <- str_replace(ctl, "seqfile = .*", paste0("seqfile = ", fasta))
+
+	cat(ctl, file="temp.ctl", sep="\n")
+
+	# Run
 	system("codeml temp.ctl", ignore.stdout=silent)
-	# system("yes", timeout=1) # automatically replace stop codons	
+
+	setwd(oldwd)
+}
+
+parseCodeml <- function(respath) {
+	list.files(respath, pattern="mlc")
 	res <- readLines("mlc")
 	omega <- as.numeric(stringr::str_extract(grep("omega", res, value=T), "[\\d\\.]+"))
 	setwd(oldwd)
