@@ -18,7 +18,8 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 	# fasta=f
 	require(stringr)
 	oldwd <- getwd()
-	prefix <- gsub("\\..*?$", "", basename(fasta))
+	prefix <- gsub("\\..[^\\.]*$", "", basename(fasta))
+	
 	model <- match.arg(model)
 	if (model=="branch-site") {
 		ctl <- readLines("codeml-M2-BS-H1.ctl")
