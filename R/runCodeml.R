@@ -29,7 +29,7 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 	}
 
 	if (dir.exists(paste0(model, "_results/", prefix))) {
-		stop("Files already exists, consider deleting?")
+		stop(paste0("Path ", paste0(model, "_results/", prefix), " already exists, consider deleting?"))
 	} else {
 		dir.create(paste0(model, "_results/", prefix))
 	}
@@ -38,7 +38,7 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 
 	# For models M1a and M2a we are using branch lengths estimated under M0 model:
 	if (model %in% c("M1a", "M2a")) {
-		raw <- readLines(paste0("M0_results/", prefix, "/mlc"))
+		raw <- readLines(paste0("M0_results/", prefix, "/M0_mlc"))
 		textphy <- raw[grep("tree length", raw)[1]+4]
 	}
 
