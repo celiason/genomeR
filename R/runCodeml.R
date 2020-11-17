@@ -48,7 +48,12 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 		warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
 	}
 
-	outpath <- paste0(model, "_results/", prefix)	
+	if (is.null(outpath)) {
+		outpath <- paste0(model, "_results/", prefix)		
+	} else {
+		outpath <- paste0(outpath, "/", prefix)
+	}
+	
 	if (!dir.exists(outpath)) {
 		dir.create(outpath)
 	}
