@@ -14,6 +14,12 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
+#' 
+fasta=f
+model="M0"
+phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
+outpath="sensory_M0"
+
 runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), fasta, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
 	# fasta=f
 	require(stringr)
@@ -26,12 +32,6 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 	}
 	if (model=="free") {
 		ctl <- readLines("codeml_free.ctl")
-	}
-
-	if (dir.exists(paste0(model, "_results/", prefix))) {
-		stop(paste0("Path ", paste0(model, "_results/", prefix), " already exists, consider deleting?"))
-	} else {
-		dir.create(paste0(model, "_results/", prefix))
 	}
 
 	ctl <- readLines(paste0(model, ".ctl"))
@@ -54,9 +54,18 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), f
 		outpath <- paste0(outpath, "/", prefix)
 	}
 	
+	# if (dir.exists(paste0(model, "_results/", prefix))) {
+	# 	stop(paste0("Path ", paste0(model, "_results/", prefix), " already exists, consider deleting?"))
+	# } else {
+	# 	dir.create(paste0(model, "_results/", prefix))
+	# }
+
 	if (!dir.exists(outpath)) {
-		dir.create(outpath)
+		dir.create(outpath, recursive=TRUE)
+	} else if (dir.exists(outpath)) {
+		stop(paste0("Path ", outpath, " already exists, consider deleting?"))
 	}
+	
 	setwd(outpath)
 
 	if (fixedbl) {
