@@ -24,9 +24,9 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "BS", "free"), fasta, for
 	# if (model=="BS") {
 	# 	ctl <- readLines("codeml-M2-BS-H1.ctl")
 	# }
-	if (model=="free") {
-		ctl <- readLines("freeratio.ctl")
-	}
+	# if (model=="free") {
+	# 	ctl <- readLines("free.ctl")
+	# }
 
 	ctl <- readLines(paste0(model, ".ctl"))
 
