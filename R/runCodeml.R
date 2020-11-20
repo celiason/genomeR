@@ -14,30 +14,24 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-#' 
-fasta=f
-model="M0"
-phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
-outpath="sensory_M0"
-
-runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "branch-site", "free"), fasta, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
+runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "BS", "free"), fasta, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
 	# fasta=f
 	require(stringr)
 	oldwd <- getwd()
 	prefix <- gsub("\\..[^\\.]*$", "", basename(fasta))
 	
 	model <- match.arg(model)
-	if (model=="branch-site") {
-		ctl <- readLines("codeml-M2-BS-H1.ctl")
-	}
+	# if (model=="BS") {
+	# 	ctl <- readLines("codeml-M2-BS-H1.ctl")
+	# }
 	if (model=="free") {
-		ctl <- readLines("codeml_free.ctl")
+		ctl <- readLines("freeratio.ctl")
 	}
 
 	ctl <- readLines(paste0(model, ".ctl"))
 
 	# For models M1a and M2a we are using branch lengths estimated under M0 model:
-	if (model %in% c("M1a", "M2a")) {
+	if (model %in% c("M1a", "M2a", "free")) {
 		raw <- readLines(paste0("M0_results/", prefix, "/M0_mlc"))
 		textphy <- raw[grep("tree length", raw)[1]+4]
 	}
