@@ -14,7 +14,14 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "BS", "free"), fasta, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
+
+# fasta=fafiles[1]
+# model="free"
+# M0_mlc="sensory_M0/Tas1r3/M0_mlc"
+
+# readLines(M0_mlc)
+
+runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
 	# fasta=f
 	require(stringr)
 	oldwd <- getwd()
@@ -30,24 +37,27 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "BS", "free"), fasta, for
 
 	ctl <- readLines(paste0(model, ".ctl"))
 
-	# For models M1a and M2a we are using branch lengths estimated under M0 model:
-	if (model %in% c("M1a", "M2a", "free")) {
-		raw <- readLines(paste0("M0_results/", prefix, "/M0_mlc"))
-		textphy <- raw[grep("tree length", raw)[1]+4]
-	}
-
 	# For model M0 we are using phylogeny without any nodes labeled
 	if (model == "M0") {
 		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = kingtree_nolabels.phy"))
 		warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
 	}
 
+	# Setup outut path for files
 	if (is.null(outpath)) {
 		outpath <- paste0(model, "_results/", prefix)		
 	} else {
 		outpath <- paste0(outpath, "/", prefix)
 	}
-	
+
+	# For models M1a, M2a, and free-ratio we are using branch lengths estimated under M0 model:
+	if (model %in% c("M1a", "M2a", "free")) {
+		raw <- readLines(paste0(outpath, "/M0_mlc"))
+		raw <- readLines(M0_mlc)
+		textphy <- raw[grep("tree length", raw)[1]+4]
+	}
+
+
 	# if (dir.exists(paste0(model, "_results/", prefix))) {
 	# 	stop(paste0("Path ", paste0(model, "_results/", prefix), " already exists, consider deleting?"))
 	# } else {
@@ -68,12 +78,13 @@ runCodeml <- function(phy, model=c("M0", "M1a", "M2a", "BS", "free"), fasta, for
 	} else {
 		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = ", phy))	
 	}
-	
+# fasta	="/home/FM/celiason/uce-alcedinidae/output/cds_sensory/Tas1r3.fa"
 	ctl <- str_replace(ctl, "seqfile = .*", paste0("seqfile = ", fasta))
 
 	cat(ctl, file="temp.ctl", sep="\n")
 
 	# Run
+	# silent=FALSE
 	system("codeml temp.ctl", ignore.stdout=silent)
 
 	setwd(oldwd)
