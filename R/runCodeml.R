@@ -14,13 +14,6 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-
-# fasta=fafiles[1]
-# model="free"
-# M0_mlc="sensory_M0/Tas1r3/M0_mlc"
-
-# readLines(M0_mlc)
-
 runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
 	# fasta=f
 	require(stringr)
@@ -78,16 +71,15 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 	} else {
 		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = ", phy))	
 	}
-# fasta	="/home/FM/celiason/uce-alcedinidae/output/cds_sensory/Tas1r3.fa"
-	ctl <- str_replace(ctl, "seqfile = .*", paste0("seqfile = ", fasta))
 
+	ctl <- str_replace(ctl, "seqfile = .*", paste0("seqfile = ", fasta))
 	cat(ctl, file="temp.ctl", sep="\n")
 
 	# Run
-	# silent=FALSE
 	system("codeml temp.ctl", ignore.stdout=silent)
 
 	setwd(oldwd)
+
 }
 
 parseCodeml <- function(respath) {
