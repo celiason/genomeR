@@ -36,6 +36,8 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 		warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
 	}
 
+	M0path <- paste0("M0_results/", prefix)
+
 	# Setup outut path for files
 	if (is.null(outpath)) {
 		outpath <- paste0(model, "_results/", prefix)		
@@ -45,8 +47,8 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 
 	# For models M1a, M2a, and free-ratio we are using branch lengths estimated under M0 model:
 	if (model %in% c("M1a", "M2a", "free")) {
-		raw <- readLines(paste0(outpath, "/M0_mlc"))
-		raw <- readLines(M0_mlc)
+		raw <- readLines(paste0(M0path, "/M0_mlc"))
+		# raw <- readLines(M0_mlc)
 		textphy <- raw[grep("tree length", raw)[1]+4]
 	}
 
@@ -59,7 +61,7 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 
 	if (!dir.exists(outpath)) {
 		dir.create(outpath, recursive=TRUE)
-	} else if (dir.exists(outpath)) {
+	} else if (dir.exists(outpath) & !force) {
 		stop(paste0("Path ", outpath, " already exists, consider deleting?"))
 	}
 	
