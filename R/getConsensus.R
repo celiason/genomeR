@@ -8,7 +8,8 @@
 #' 
 #' @export
 #' 
-getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>30 && DP>5") {
+getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>30 && DP>5", onlyvar=FALSE) {
+	
 	nm <- stringr::str_extract(basename(bam), ".*?(?=\\.bam)")
 	
 	if (is.null(outpath)) {
@@ -22,7 +23,11 @@ getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRU
 		if (!force & file.exists(paste0(outpath, "/", nm, ".calls.vcf.gz"))) {
 			stop("VCF file already exists, use `force=TRUE` to overwrite")
 		} else {
-			system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))	
+			if (onlyvar) {
+				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))
+			} else {
+				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -m -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))	
+			}
 		}		
 	}
 	# index

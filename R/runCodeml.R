@@ -6,6 +6,7 @@
 #' @param force whether to force analysis and mask early stop codons
 #' @param outpath output path for results
 #' @param silent whether to output run progress in console
+#' @param M0path path for M0 results to use for branch lengths
 #' 
 #' @author Chad M. Eliason
 #' 
@@ -14,7 +15,7 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE) {
+runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE, M0path=NULL) {
 	# fasta=f
 	require(stringr)
 	oldwd <- getwd()
@@ -36,8 +37,12 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 		warning("Ignoring `phy` argument. Using kingtree_nolabels.phy in working directory.")
 	}
 
-	M0path <- paste0("M0_results/", prefix)
-
+	if (is.null(M0path)) {
+		M0path <- paste0("M0_results/", prefix)	
+	} else {
+		M0path <- paste0(M0path, "/", prefix)
+	}
+	
 	# Setup outut path for files
 	if (is.null(outpath)) {
 		outpath <- paste0(model, "_results/", prefix)		
