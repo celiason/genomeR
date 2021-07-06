@@ -16,7 +16,7 @@
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
 runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "M7", "M8", "BS", "free", "MA", "MAnull"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE, M0path=NULL) {
-	# fasta=f
+	# fasta=fafiles[2]
 	require(stringr)
 	require(treeio)
 	oldwd <- getwd()
@@ -40,21 +40,21 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "M7", "M8", "BS", "free
 	}
 
 	if (is.null(M0path)) {
-		M0path <- paste0("M0_results/", prefix)	
+		M0path <- paste0("M0_results/", prefix)
 	} else {
 		M0path <- paste0(M0path, "/", prefix)
 	}
 	
 	# Setup outut path for files
 	if (is.null(outpath)) {
-		outpath <- paste0(model, "_results/", prefix)		
+		outpath <- paste0(model, "_results/", prefix)
 	} else {
 		outpath <- paste0(outpath, "/", prefix)
 	}
 
 	# For models M1a, M2a, and free-ratio we are using branch lengths estimated under M0 model:
 	if (model %in% c("M1a", "M2a", "M7", "M8", "free", "MA", "MAnull")) {
-		raw <- readLines(paste0(M0path, "/mlc"))
+		raw <- readLines(paste0(M0path, "/M0_mlc"))
 		# raw <- readLines(M0_mlc)
 		textphy <- raw[grep("tree length", raw)[1]+4]
 	}
@@ -85,6 +85,8 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "M7", "M8", "BS", "free
 			tr <- treeio::label_branch_paml(tr, 56, "#1")
 			tr <- treeio::label_branch_paml(tr, 59, "#1")
 			tr <- treeio::label_branch_paml(tr, 51, "#1")
+			tr$node.label <- gsub(" ", "", tr$node.label)
+			tr$tip.label <- gsub(" ", "", tr$tip.label)
 			# plot(tr, show.node.label=TRUE)
 			treeio::write.tree(tr, file="fixed.phy")
 		}
