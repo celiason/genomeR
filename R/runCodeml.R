@@ -15,9 +15,10 @@
 #' model="M0"
 #' phy="/home/FM/celiason/uce-alcedinidae/paml/kingtree_nolabels.phy"
 #' 
-runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE, M0path=NULL) {
+runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "M7", "M8", "BS", "free", "MA", "MAnull"), phy, force=FALSE, fixedbl=FALSE, outpath=NULL, silent=FALSE, M0path=NULL) {
 	# fasta=f
 	require(stringr)
+	require(treeio)
 	oldwd <- getwd()
 	prefix <- gsub("\\..[^\\.]*$", "", basename(fasta))
 	
@@ -29,6 +30,7 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 	# 	ctl <- readLines("free.ctl")
 	# }
 
+	# TODO: create MA, MAnull ctl files
 	ctl <- readLines(paste0(model, ".ctl"))
 
 	# For model M0 we are using phylogeny without any nodes labeled
@@ -51,12 +53,11 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 	}
 
 	# For models M1a, M2a, and free-ratio we are using branch lengths estimated under M0 model:
-	if (model %in% c("M1a", "M2a", "free")) {
-		raw <- readLines(paste0(M0path, "/M0_mlc"))
+	if (model %in% c("M1a", "M2a", "M7", "M8", "free", "MA", "MAnull")) {
+		raw <- readLines(paste0(M0path, "/mlc"))
 		# raw <- readLines(M0_mlc)
 		textphy <- raw[grep("tree length", raw)[1]+4]
 	}
-
 
 	# if (dir.exists(paste0(model, "_results/", prefix))) {
 	# 	stop(paste0("Path ", paste0(model, "_results/", prefix), " already exists, consider deleting?"))
@@ -74,6 +75,19 @@ runCodeml <- function(fasta, model=c("M0", "M1a", "M2a", "BS", "free"), phy, for
 
 	if (fixedbl) {
 		cat(textphy, file="fixed.phy")
+		if (model %in% c("MA", "MAnull")) {
+			# modify the M0 trees and add annotations for nodes (e.g., "#1")
+			tr <- treeio::read.tree("fixed.phy")
+			tr$node.label <- NULL
+			# plot(tr, show.node.label=TRUE)
+			# ape::nodelabels()
+			tr <- treeio::label_branch_paml(tr, 44, "#1")
+			tr <- treeio::label_branch_paml(tr, 56, "#1")
+			tr <- treeio::label_branch_paml(tr, 59, "#1")
+			tr <- treeio::label_branch_paml(tr, 51, "#1")
+			# plot(tr, show.node.label=TRUE)
+			treeio::write.tree(tr, file="fixed.phy")
+		}
 		ctl <- str_replace(ctl, "treefile = .*$", "treefile = fixed.phy")
 	} else {
 		ctl <- str_replace(ctl, "treefile = .*", paste0("treefile = ", phy))	
