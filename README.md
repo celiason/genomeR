@@ -1,4 +1,4 @@
-# genomeR
+# Genome analysis in R
 
 This is the development version of the R package genomeR
 
