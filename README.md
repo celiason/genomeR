@@ -11,3 +11,9 @@ install.packages("devtools")
 devtools::install_github("celiason/genomeR")
 library(genomeR)
 ```
+
+Then, for example, to align reads in file "myreads.fastq.gz" to reference "myref.fa" run the following:
+
+```r
+alignReads(ref="myref.fa", reads="myreads.fastq", cores=48, ram=150, suffix="run1")
+```
