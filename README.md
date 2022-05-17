@@ -6,7 +6,9 @@ Please report any bugs or issues, as this package is currently under development
 
 You can install the package using the devtools R package:
 
+```r
 install.packages("devtools")
 library(devtools)
 install_github("celiason/genomeR")
 library(genomeR)
+```
