@@ -5,11 +5,12 @@
 #' @param call whether to call variants
 #' @param index whether to index the VCF variant file output
 #' @param cons whether to generate consensus sequence
+#' @param suffix suffix of genome file (e.g., ".con.fa")
 #' 
 #' @export
 #' 
-getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRUE, suffix=NULL, force=FALSE, filter="QUAL>30 && DP>5", onlyvar=FALSE) {
-	
+getConsensus <- function(ref, bam, vcfpath=NULL, outpath=NULL, call=TRUE, index=TRUE, cons=TRUE, suffix=".con.fa", force=FALSE, filter="QUAL>30 && DP>5", onlyvar=TRUE) {
+
 	nm <- stringr::str_extract(basename(bam), ".*?(?=\\.bam)")
 	
 	if (is.null(outpath)) {
@@ -24,31 +25,26 @@ getConsensus <- function(ref, bam, outpath=NULL, call=TRUE, index=TRUE, cons=TRU
 			stop("VCF file already exists, use `force=TRUE` to overwrite")
 		} else {
 			if (onlyvar) {
-				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))
+				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -mv -Oz -o ", vcfpath, "/", nm, ".calls.vcf.gz"))
 			} else {
-				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -m -Oz -o ", outpath, "/", nm, ".calls.vcf.gz"))	
+				system(paste0("bcftools mpileup -I -Ou -f ", ref, " ", bam, " | bcftools call -m -Oz -o ", vcfpath, "/", nm, ".calls.vcf.gz"))	
 			}
 		}		
 	}
 	# index
 	if (index) {
-		system(paste0("bcftools index ", outpath, "/", nm, ".calls.vcf.gz"))
+		system(paste0("bcftools index ", vcfpath, "/", nm, ".calls.vcf.gz"))
 	}
 	# normalize indels
 	# system(paste0("bcftools norm -f ", ref, " ", nm, ".calls.vcf.gz -Ob -o ", nm, ".calls.norm.bcf"))
 	# filter adjacent indels within 5bp
 	# system(paste0("bcftools filter --IndelGap 5 calls.norm.bcf -Ob -o calls.norm.flt-indels.bcf")
 	if (cons) {
-		if (!force & file.exists(paste0(outpath, "/", nm, ".consensus.fa"))) {
+		if (!force & file.exists(paste0(outpath, "/", nm, suffix))) {
 			stop("Consensus FASTA already exists, try a different suffix")
 		} else {
-			system(paste0("cat ", ref, " | bcftools consensus -i '", filter, "' ", outpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, ".consensus.fa"))
+			system(paste0("cat ", ref, " | bcftools consensus -i '", filter, "' ", vcfpath, "/", nm, ".calls.vcf.gz > ", outpath, "/", nm, suffix))
 		}		
 	}
 	# This assumes we have already made the calls, normalized indels and filtered. There is another page which goes deeper and is devoted just to this, but in brief, the variant calling command in its simplest form is:
 }
-
-# Testing zone:
-# list.files("genomes/actHom")
-# getConsensus(bam="alignments/actHom-to-actHom.bam", ref="genomes/actHom/actHom-to-todChl.consensus.fa")
-
